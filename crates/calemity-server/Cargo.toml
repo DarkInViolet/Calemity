@@ -1,0 +1,16 @@
+[package]
+name = "calemity-server"
+version = "0.1.0"
+edition = "2021"
+license.workspace = true
+
+[dependencies]
+calemity-protocol = {
+    workspace = true
+}
+tokio = {
+    workspace = true
+}
+axum = {
+    workspace = true
+}

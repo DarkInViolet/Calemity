@@ -1,0 +1,16 @@
+[package]
+name = "calemity-storage"
+version = "0.1.0"
+edition = "2021"
+license.workspace = true
+
+[dependencies]
+calemity-protocol = {
+    workspace = true
+}
+sqlx = {
+    workspace = true
+}
+ulid = {
+    workspace = true
+}
