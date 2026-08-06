@@ -7,7 +7,9 @@ export function createConversation(
     title: string,
 ): Promise<Conversation> {
     return invoke<Conversation>("create_conversation", {
-        title,
+        request: {
+            title,
+        },
     });
 }
 
@@ -22,10 +24,12 @@ export function sendMessage(
     content: string,
 ): Promise<void> {
     return invoke<void>("send_message", {
-        authorId,
-        conversationId,
-        deviceId,
-        content,
+        request: {
+            authorId,
+            conversationId,
+            deviceId,
+            content,
+        },
     });
 }
 
@@ -33,6 +37,8 @@ export function loadMessages(
     conversationId: string,
 ): Promise<Message[]> {
     return invoke<Message[]>("load_messages", {
-        conversationId,
+        request: {
+            conversationId,
+        },
     });
 }

@@ -1,14 +1,16 @@
-use crate::core::database::Database;
+use calemity_api::conversations::CreateConversationRequest;
 use calemity_protocol::models::conversation::Conversation;
 use calemity_storage::{get_conversations, insert_conversation};
 use tauri::State;
 
+use crate::core::database::Database;
+
 #[tauri::command]
 pub async fn create_conversation(
     state: State<'_, Database>,
-    title: String,
+    request: CreateConversationRequest,
 ) -> Result<Conversation, String> {
-    let title = title.trim();
+    let title = request.title.trim();
 
     if title.is_empty() {
         return Err("Conversation title cannot be empty".to_string());

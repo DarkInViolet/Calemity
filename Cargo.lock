@@ -328,9 +328,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "calemity-api"
+version = "0.1.0"
+dependencies = [
+ "calemity-protocol",
+ "serde",
+ "ulid",
+]
+
+[[package]]
 name = "calemity-desktop"
 version = "0.1.0"
 dependencies = [
+ "calemity-api",
  "calemity-protocol",
  "calemity-storage",
  "dirs 5.0.1",

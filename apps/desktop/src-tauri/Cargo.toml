@@ -11,6 +11,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 
+calemity-api = { workspace = true }
 calemity-protocol = { workspace = true }
 calemity-storage = { workspace = true }
 
