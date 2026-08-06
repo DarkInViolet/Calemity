@@ -24,10 +24,12 @@ export function sendMessage(
     content: string,
 ): Promise<void> {
     return invoke<void>("send_message", {
-        authorId,
-        conversationId,
-        deviceId,
-        content,
+        request: {
+            authorId,
+            conversationId,
+            deviceId,
+            content,
+        },
     });
 }
 
