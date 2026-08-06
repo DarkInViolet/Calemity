@@ -4,4 +4,5 @@
 //! It must not contain application, database, or transport-specific logic.
 
 pub mod conversations;
+pub mod error;
 pub mod messages;
