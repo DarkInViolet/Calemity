@@ -8,21 +8,21 @@ members = [
     "crates/calemity-storage",
     "crates/calemity-identity",
     "crates/calemity-sync",
+    "crates/calemity-api",
 ]
 
 [workspace.package]
 license = "AGPL-3.0-or-later"
 
 [workspace.dependencies]
-
 calemity-protocol = { path = "crates/calemity-protocol" }
 calemity-server = { path = "crates/calemity-server" }
 calemity-storage = { path = "crates/calemity-storage" }
 calemity-identity = { path = "crates/calemity-identity" }
 calemity-sync = { path = "crates/calemity-sync" }
+calemity-api = { path = "crates/calemity-api" }
 
 tokio = { version = "1.38", features = ["full"] }
-
 axum = { version = "0.7", features = ["ws"] }
 
 sqlx = {
@@ -44,7 +44,5 @@ serde = {
 }
 
 serde_json = "1.0"
-
 dirs = "5.0"
-
 blake3 = "1.5"

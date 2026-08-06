@@ -7,7 +7,9 @@ export function createConversation(
     title: string,
 ): Promise<Conversation> {
     return invoke<Conversation>("create_conversation", {
-        title,
+        request: {
+            title,
+        },
     });
 }
 
