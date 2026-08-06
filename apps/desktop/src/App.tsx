@@ -5,6 +5,7 @@ import { MessageComposer } from "./components/chat/MessageComposer";
 import { MessageList } from "./components/chat/MessageList";
 import type { Conversation } from "./lib/conversation";
 import type { Message } from "./lib/message";
+import { getErrorMessage } from "./lib/api-error";
 import {
     createConversation,
     listConversations,
@@ -49,7 +50,7 @@ export default function App() {
 
             setError(null);
         } catch (caughtError) {
-            setError(String(caughtError));
+            setError(getErrorMessage(caughtError));
         }
     }
     async function refreshMessages(
@@ -62,7 +63,7 @@ export default function App() {
             setMessages(loadedMessages);
             setError(null);
         } catch (caughtError) {
-            setError(String(caughtError));
+            setError(getErrorMessage(caughtError));
         }
     }
     async function handleCreateConversation() {
@@ -81,7 +82,7 @@ export default function App() {
             setSelectedConversationId(conversation.id);
             setError(null);
         } catch (caughtError) {
-            setError(String(caughtError));
+            setError(getErrorMessage(caughtError));
         }
     }
     async function handleSendMessage() {
@@ -103,7 +104,7 @@ export default function App() {
             await refreshMessages(selectedConversationId);
             setError(null);
         } catch (caughtError) {
-            setError(String(caughtError));
+            setError(getErrorMessage(caughtError));
         }
     }
 

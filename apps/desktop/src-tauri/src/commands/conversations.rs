@@ -1,30 +1,45 @@
-use calemity_api::conversations::CreateConversationRequest;
+use crate::core::database::Database;
+use calemity_api::{
+    conversations::CreateConversationRequest,
+    error::{ApiError, ApiErrorCode},
+};
 use calemity_protocol::models::conversation::Conversation;
 use calemity_storage::{get_conversations, insert_conversation};
 use tauri::State;
-
-use crate::core::database::Database;
 
 #[tauri::command]
 pub async fn create_conversation(
     state: State<'_, Database>,
     request: CreateConversationRequest,
-) -> Result<Conversation, String> {
+) -> Result<Conversation, ApiError> {
     let title = request.title.trim();
 
     if title.is_empty() {
-        return Err("Conversation title cannot be empty".to_string());
+        return Err(ApiError::new(
+            ApiErrorCode::ConversationTitleEmpty,
+            "Conversation title cannot be empty",
+        ));
     }
 
     if title.chars().count() > 100 {
-        return Err("Conversation title cannot exceed 100 characters".to_string());
+        return Err(ApiError::new(
+            ApiErrorCode::ConversationTitleTooLong,
+            "Conversation title cannot exceed 100 characters",
+        ));
     }
 
     let conversation = Conversation::new(title.to_string());
 
     insert_conversation(&state.pool, &conversation)
         .await
-        .map_err(|error| error.to_string())?;
+        .map_err(|error| {
+            eprintln!("Failed to store conversation: {error}");
+
+            ApiError::new(
+                ApiErrorCode::StorageFailure,
+                "Failed to save the conversation",
+            )
+        })?;
 
     Ok(conversation)
 }
