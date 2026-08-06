@@ -45,8 +45,10 @@ pub async fn create_conversation(
 }
 
 #[tauri::command]
-pub async fn list_conversations(state: State<'_, Database>) -> Result<Vec<Conversation>, String> {
-    get_conversations(&state.pool)
-        .await
-        .map_err(|error| error.to_string())
+pub async fn list_conversations(state: State<'_, Database>) -> Result<Vec<Conversation>, ApiError> {
+    get_conversations(&state.pool).await.map_err(|error| {
+        eprintln!("Failed to load conversations: {error}");
+
+        ApiError::new(ApiErrorCode::StorageFailure, "Failed to load conversations")
+    })
 }
