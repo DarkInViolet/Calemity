@@ -1,4 +1,4 @@
-use calemity_protocol::models::message::Message;
+use calemity_protocol::models::{conversation::Conversation, message::Message};
 use sqlx::{sqlite::SqlitePoolOptions, Row, SqlitePool};
 use std::path::Path;
 use ulid::Ulid;
@@ -26,6 +26,18 @@ pub async fn init_db(db_path: &Path) -> Result<SqlitePool, sqlx::Error> {
 
     sqlx::query(
         "
+        CREATE TABLE IF NOT EXISTS conversations (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+    );
+    ",
+    )
+    .execute(&pool)
+    .await?;
+
+    sqlx::query(
+        "
         CREATE TABLE IF NOT EXISTS messages (
             id TEXT PRIMARY KEY,
             author_id TEXT NOT NULL,
@@ -39,14 +51,72 @@ pub async fn init_db(db_path: &Path) -> Result<SqlitePool, sqlx::Error> {
     .execute(&pool)
     .await?;
 
+    sqlx::query(
+        "
+        CREATE INDEX IF NOT EXISTS idx_messages_conversation_timestamp
+        ON messages(conversation_id, timestamp);
+    ",
+    )
+    .execute(&pool)
+    .await?;
+
     Ok(pool)
 }
 
-pub async fn insert_message(pool: &SqlitePool, msg: &Message) -> Result<(), sqlx::Error> {
+pub async fn insert_conversation(
+    pool: &SqlitePool,
+    conversation: &Conversation,
+) -> Result<(), sqlx::Error> {
     sqlx::query(
         "
-        INSERT INTO messages
-        (
+        INSERT INTO conversations (
+            id,
+            title,
+            created_at
+    )
+    VALUES (?, ?, ?)
+    ",
+    )
+    .bind(conversation.id.to_string())
+    .bind(&conversation.title)
+    .bind(conversation.created_at as i64)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn get_conversations(pool: &SqlitePool) -> Result<Vec<Conversation>, sqlx::Error> {
+    let rows = sqlx::query(
+        "
+        SELECT id, title, created_at
+        FROM conversations
+        ORDER BY created_at ASC, id ASC
+        ",
+    )
+    .fetch_all(pool)
+    .await?;
+
+    let mut conversations = Vec::new();
+
+    for row in rows {
+        let conversation = Conversation {
+            id: Ulid::from_string(row.try_get("id")?)
+                .map_err(|_| sqlx::Error::Protocol("Invalid conversation ID".into()))?,
+            title: row.try_get("title")?,
+            created_at: row.try_get::<i64, _>("created_at")? as u64,
+        };
+
+        conversations.push(conversation);
+    }
+
+    Ok(conversations)
+}
+
+pub async fn insert_message(pool: &SqlitePool, message: &Message) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "
+        INSERT INTO messages (
             id,
             author_id,
             conversation_id,
@@ -54,16 +124,15 @@ pub async fn insert_message(pool: &SqlitePool, msg: &Message) -> Result<(), sqlx
             content,
             timestamp
     )
-
     VALUES (?, ?, ?, ?, ?, ?)
     ",
     )
-    .bind(msg.id.to_string())
-    .bind(msg.author_id.to_string())
-    .bind(msg.conversation_id.to_string())
-    .bind(&msg.device_id)
-    .bind(&msg.content)
-    .bind(msg.timestamp as i64)
+    .bind(message.id.to_string())
+    .bind(message.author_id.to_string())
+    .bind(message.conversation_id.to_string())
+    .bind(&message.device_id)
+    .bind(&message.content)
+    .bind(message.timestamp as i64)
     .execute(pool)
     .await?;
 
@@ -76,10 +145,16 @@ pub async fn get_messages(
 ) -> Result<Vec<Message>, sqlx::Error> {
     let rows = sqlx::query(
         "
-        SELECT *
+        SELECT
+        id,
+        author_id,
+        conversation_id,
+        device_id,
+        content,
+        timestamp
         FROM messages
         WHERE conversation_id = ?
-        ORDER BY timestamp ASC
+        ORDER BY timestamp ASC, id ASC
         ",
     )
     .bind(conversation_id.to_string())
@@ -89,7 +164,7 @@ pub async fn get_messages(
     let mut messages = Vec::new();
 
     for row in rows {
-        let msg = Message {
+        let message = Message {
             id: Ulid::from_string(row.try_get("id")?)
                 .map_err(|_| sqlx::Error::Protocol("Invalid message ID".into()))?,
 
@@ -100,12 +175,12 @@ pub async fn get_messages(
                 .map_err(|_| sqlx::Error::Protocol("Invalid conversation ID".into()))?,
 
             device_id: row.try_get("device_id")?,
-
             content: row.try_get("content")?,
-
             timestamp: row.try_get::<i64, _>("timestamp")? as u64,
         };
-        messages.push(msg);
+
+        messages.push(message);
     }
+
     Ok(messages)
 }

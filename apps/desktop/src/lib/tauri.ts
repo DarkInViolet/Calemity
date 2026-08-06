@@ -1,12 +1,27 @@
 import { invoke } from "@tauri-apps/api/core";
 
-export async function sendMessage(
+import type { Conversation } from "./conversation";
+import type { Message } from "./message";
+
+export function createConversation(
+    title: string,
+): Promise<Conversation> {
+    return invoke<Conversation>("create_conversation", {
+        title,
+    });
+}
+
+export function listConversations(): Promise<Conversation[]> {
+    return invoke<Conversation[]>("list_conversations");
+}
+
+export function sendMessage(
     authorId: string,
     conversationId: string,
     deviceId: string,
-    content: string
-) {
-    return invoke("send_message", {
+    content: string,
+): Promise<void> {
+    return invoke<void>("send_message", {
         authorId,
         conversationId,
         deviceId,
@@ -14,10 +29,10 @@ export async function sendMessage(
     });
 }
 
-export async function loadMessages(
-    conversationId: string
-) {
-    return invoke("load_messages", {
+export function loadMessages(
+    conversationId: string,
+): Promise<Message[]> {
+    return invoke<Message[]>("load_messages", {
         conversationId,
     });
 }

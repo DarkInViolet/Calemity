@@ -2,9 +2,10 @@
 
 mod commands;
 mod core;
-
-use commands::messages::{load_messages, send_message};
-
+use commands::{
+    conversations::{create_conversation, list_conversations},
+    messages::{load_messages, send_message},
+};
 use core::database::setup_database;
 
 #[tokio::main]
@@ -13,7 +14,12 @@ async fn main() {
 
     tauri::Builder::default()
         .manage(database)
-        .invoke_handler(tauri::generate_handler![send_message, load_messages])
+        .invoke_handler(tauri::generate_handler![
+            create_conversation,
+            list_conversations,
+            send_message,
+            load_messages
+        ])
         .run(tauri::generate_context!())
         .expect("Tauri error");
 }
