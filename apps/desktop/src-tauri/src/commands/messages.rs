@@ -1,8 +1,7 @@
-use calemity_api::messages::SendMessageRequest;
+use calemity_api::messages::{LoadMessagesRequest, SendMessageRequest};
 use calemity_protocol::models::message::Message;
 use calemity_storage::{get_messages, insert_message};
 use tauri::State;
-use ulid::Ulid;
 
 use crate::core::database::Database;
 
@@ -28,11 +27,9 @@ pub async fn send_message(
 #[tauri::command]
 pub async fn load_messages(
     state: State<'_, Database>,
-    conversation_id: String,
+    request: LoadMessagesRequest,
 ) -> Result<Vec<Message>, String> {
-    let conversation = Ulid::from_string(&conversation_id).map_err(|error| error.to_string())?;
-
-    get_messages(&state.pool, &conversation)
+    get_messages(&state.pool, &request.conversation_id)
         .await
         .map_err(|error| error.to_string())
 }

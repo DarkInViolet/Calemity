@@ -37,6 +37,8 @@ export function loadMessages(
     conversationId: string,
 ): Promise<Message[]> {
     return invoke<Message[]>("load_messages", {
-        conversationId,
+        request: {
+            conversationId,
+        },
     });
 }
