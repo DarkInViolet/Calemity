@@ -86,19 +86,20 @@ export default function App() {
         }
     }
     async function handleSendMessage() {
-        const content = messageText.trim();
-
-        if (!content || !selectedConversationId) {
-            return;
+        if (
+        !messageText.trim() ||
+        !selectedConversationId
+        ) {
+        return;
         }
 
         try {
-            await sendMessage(
-                AUTHOR,
-                selectedConversationId,
-                DEVICE_ID,
-                content,
-            );
+        await sendMessage(
+            AUTHOR,
+            selectedConversationId,
+            DEVICE_ID,
+            messageText,
+        );
 
             setMessageText("");
             await refreshMessages(selectedConversationId);

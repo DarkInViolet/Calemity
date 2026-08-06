@@ -12,9 +12,7 @@ pub async fn send_message(
     state: State<'_, Database>,
     request: SendMessageRequest,
 ) -> Result<(), ApiError> {
-    let content = request.content.trim();
-
-    if content.is_empty() {
+    if request.content.trim().is_empty() {
         return Err(ApiError::new(
             ApiErrorCode::MessageContentEmpty,
             "Message content cannot be empty",
@@ -25,7 +23,7 @@ pub async fn send_message(
         request.author_id,
         request.conversation_id,
         request.device_id,
-        content.to_string(),
+        request.content,
     );
 
     insert_message(&state.pool, &message)
@@ -43,8 +41,12 @@ pub async fn send_message(
 pub async fn load_messages(
     state: State<'_, Database>,
     request: LoadMessagesRequest,
-) -> Result<Vec<Message>, String> {
+) -> Result<Vec<Message>, ApiError> {
     get_messages(&state.pool, &request.conversation_id)
         .await
-        .map_err(|error| error.to_string())
+        .map_err(|error| {
+            eprintln!("Failed to load messages: {error}");
+
+            ApiError::new(ApiErrorCode::StorageFailure, "Failed to load messages")
+        })
 }
