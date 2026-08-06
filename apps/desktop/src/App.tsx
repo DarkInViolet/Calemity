@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-
+import { ChatHeader } from "./components/chat/ChatHeader";
+import { ConversationSidebar } from "./components/chat/ConversationSidebar";
+import { MessageComposer } from "./components/chat/MessageComposer";
+import { MessageList } from "./components/chat/MessageList";
 import type { Conversation } from "./lib/conversation";
 import type { Message } from "./lib/message";
 import {
@@ -13,7 +16,9 @@ const AUTHOR = "01K1GK79HVM0R8Y8B5XJXQ6A1A";
 const DEVICE_ID = "desktop";
 
 export default function App() {
-    const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [conversations, setConversations] =
+        useState<Conversation[]>([]);
+
     const [selectedConversationId, setSelectedConversationId] =
         useState<string | null>(null);
 
@@ -21,10 +26,10 @@ export default function App() {
     const [messageText, setMessageText] = useState("");
     const [conversationTitle, setConversationTitle] = useState("");
     const [error, setError] = useState<string | null>(null);
-
     async function refreshConversations() {
         try {
-            const loadedConversations = await listConversations();
+            const loadedConversations =
+                await listConversations();
 
             setConversations(loadedConversations);
 
@@ -32,7 +37,8 @@ export default function App() {
                 if (
                     currentId &&
                     loadedConversations.some(
-                        (conversation) => conversation.id === currentId,
+                        (conversation) =>
+                            conversation.id === currentId,
                     )
                 ) {
                     return currentId;
@@ -46,10 +52,12 @@ export default function App() {
             setError(String(caughtError));
         }
     }
-
-    async function refreshMessages(conversationId: string) {
+    async function refreshMessages(
+        conversationId: string,
+    ) {
         try {
-            const loadedMessages = await loadMessages(conversationId);
+            const loadedMessages =
+                await loadMessages(conversationId);
 
             setMessages(loadedMessages);
             setError(null);
@@ -57,7 +65,6 @@ export default function App() {
             setError(String(caughtError));
         }
     }
-
     async function handleCreateConversation() {
         const title = conversationTitle.trim();
 
@@ -66,7 +73,8 @@ export default function App() {
         }
 
         try {
-            const conversation = await createConversation(title);
+            const conversation =
+                await createConversation(title);
 
             setConversationTitle("");
             await refreshConversations();
@@ -76,7 +84,6 @@ export default function App() {
             setError(String(caughtError));
         }
     }
-
     async function handleSendMessage() {
         const content = messageText.trim();
 
@@ -113,170 +120,52 @@ export default function App() {
         void refreshMessages(selectedConversationId);
     }, [selectedConversationId]);
 
-    const selectedConversation = conversations.find(
-        (conversation) => conversation.id === selectedConversationId,
-    );
+    const selectedConversation =
+        conversations.find(
+            (conversation) =>
+                conversation.id === selectedConversationId,
+        ) ?? null;
 
     return (
-        <div
-            style={{
-                display: "grid",
-                gridTemplateColumns: "240px minmax(0, 1fr)",
-                height: "100vh",
-                fontFamily: "sans-serif",
-            }}
-        >
-            <aside
-                style={{
-                    borderRight: "1px solid #444",
-                    padding: 16,
-                    overflowY: "auto",
-                }}
-            >
-                <h1 style={{ marginTop: 0 }}>Calemity</h1>
+        <div className="app-shell">
+            <ConversationSidebar
+                conversations={conversations}
+                selectedConversationId={selectedConversationId}
+                conversationTitle={conversationTitle}
+                onConversationTitleChange={setConversationTitle}
+                onCreateConversation={handleCreateConversation}
+                onSelectConversation={setSelectedConversationId}
+            />
 
-                <div
-                    style={{
-                        display: "flex",
-                        gap: 8,
-                        marginBottom: 20,
-                    }}
-                >
-                    <input
-                        value={conversationTitle}
-                        placeholder="New conversation"
-                        onChange={(event) =>
-                            setConversationTitle(event.target.value)
-                        }
-                        onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                                void handleCreateConversation();
-                            }
-                        }}
-                        style={{
-                            minWidth: 0,
-                            width: "100%",
-                        }}
-                    />
+            <main className="chat-panel">
+                <ChatHeader
+                    conversation={selectedConversation}
+                />
 
-                    <button
-                        type="button"
-                        onClick={() => void handleCreateConversation()}
+                {error && (
+                    <div
+                        className="error-banner"
+                        role="alert"
                     >
-                        +
-                    </button>
-                </div>
-
-                {conversations.length === 0 ? (
-                    <p>No conversations yet.</p>
-                ) : (
-                    conversations.map((conversation) => (
-                        <button
-                            key={conversation.id}
-                            type="button"
-                            onClick={() =>
-                                setSelectedConversationId(conversation.id)
-                            }
-                            style={{
-                                display: "block",
-                                width: "100%",
-                                padding: 10,
-                                marginBottom: 8,
-                                textAlign: "left",
-                                fontWeight:
-                                    conversation.id === selectedConversationId
-                                        ? "bold"
-                                        : "normal",
-                            }}
-                        >
-                            {conversation.title}
-                        </button>
-                    ))
+                        {error}
+                    </div>
                 )}
-            </aside>
 
-            <main
-                style={{
-                    display: "grid",
-                    gridTemplateRows: "auto minmax(0, 1fr) auto",
-                    padding: 20,
-                    minWidth: 0,
-                }}
-            >
-                <header>
-                    <h2>
-                        {selectedConversation?.title ??
-                            "Select or create a conversation"}
-                    </h2>
+                <MessageList
+                    conversation={selectedConversation}
+                    messages={messages}
+                    currentAuthorId={AUTHOR}
+                />
 
-                    {error && (
-                        <p style={{ fontWeight: "bold" }}>
-                            {error}
-                        </p>
-                    )}
-                </header>
-
-                <section
-                    style={{
-                        border: "1px solid #444",
-                        padding: 12,
-                        overflowY: "auto",
-                    }}
-                >
-                    {!selectedConversation ? (
-                        <p>Create a conversation to begin.</p>
-                    ) : messages.length === 0 ? (
-                        <p>No messages yet.</p>
-                    ) : (
-                        messages.map((message) => (
-                            <div
-                                key={message.id}
-                                style={{
-                                    marginBottom: 10,
-                                }}
-                            >
-                                {message.content}
-                            </div>
-                        ))
-                    )}
-                </section>
-
-                <footer
-                    style={{
-                        display: "flex",
-                        gap: 8,
-                        paddingTop: 12,
-                    }}
-                >
-                    <input
-                        value={messageText}
-                        placeholder={
-                            selectedConversation
-                                ? "Write a message"
-                                : "Select a conversation first"
-                        }
-                        disabled={!selectedConversation}
-                        onChange={(event) =>
-                            setMessageText(event.target.value)
-                        }
-                        onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                                void handleSendMessage();
-                            }
-                        }}
-                        style={{
-                            flex: 1,
-                        }}
-                    />
-
-                    <button
-                        type="button"
-                        disabled={!selectedConversation}
-                        onClick={() => void handleSendMessage()}
-                    >
-                        Send
-                    </button>
-                </footer>
+                <MessageComposer
+                    value={messageText}
+                    conversationTitle={
+                        selectedConversation?.title ?? null
+                    }
+                    disabled={!selectedConversation}
+                    onChange={setMessageText}
+                    onSend={handleSendMessage}
+                />
             </main>
         </div>
     );
