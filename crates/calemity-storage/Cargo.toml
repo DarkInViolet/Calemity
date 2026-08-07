@@ -5,6 +5,9 @@ edition = "2021"
 license.workspace = true
 
 [dependencies]
+calemity-identity = {
+    workspace = true
+}
 calemity-protocol = {
     workspace = true
 }

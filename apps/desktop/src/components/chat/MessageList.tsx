@@ -1,11 +1,10 @@
 import { useEffect, useRef } from "react";
 import type { Conversation } from "../../lib/conversation";
-import type { Message } from "../../lib/message";
+import type { MessageView } from "../../lib/message";
 
 interface MessageListProps {
     conversation: Conversation | null;
-    messages: Message[];
-    currentAuthorId: string;
+    messages: MessageView[];
 }
 
 function formatTimestamp(timestamp: number): string {
@@ -18,7 +17,6 @@ function formatTimestamp(timestamp: number): string {
 export function MessageList({
     conversation,
     messages,
-    currentAuthorId,
 }: MessageListProps) {
     const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
 
@@ -51,40 +49,36 @@ export function MessageList({
             </section>
         );
     }
+
     return (
         <section
             className="message-list"
             aria-label={`Messages in ${conversation.title}`}
         >
-            {messages.map((message) => {
-                const isCurrentAuthor =
-                    message.author_id === currentAuthorId;
+            {messages.map((message) => (
+                <article
+                    key={message.id}
+                    className="message"
+                >
+                    <div className="message-avatar">
+                        {message.isOwn ? "Y" : "?"}
+                    </div>
 
-                return (
-                    <article
-                        key={message.id}
-                        className="message"
-                    >
-                        <div className="message-avatar">
-                            {isCurrentAuthor ? "Y" : "?"}
+                    <div className="message-body">
+                        <div className="message-metadata">
+                            <strong>
+                                {message.isOwn ? "You" : "Unknown"}
+                            </strong>
+
+                            <time>
+                                {formatTimestamp(message.timestamp)}
+                            </time>
                         </div>
 
-                        <div className="message-body">
-                            <div className="message-metadata">
-                                <strong>
-                                    {isCurrentAuthor ? "You" : "Unknown"}
-                                </strong>
-
-                                <time>
-                                    {formatTimestamp(message.timestamp)}
-                                </time>
-                            </div>
-
-                            <p>{message.content}</p>
-                        </div>
-                    </article>
-                );
-            })}
+                        <p>{message.content}</p>
+                    </div>
+                </article>
+            ))}
 
             <div ref={endOfMessagesRef} />
         </section>

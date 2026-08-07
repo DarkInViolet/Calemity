@@ -1,3 +1,4 @@
+use calemity_identity::LocalIdentity;
 use calemity_protocol::models::{conversation::Conversation, message::Message};
 use sqlx::{sqlite::SqlitePoolOptions, Row, SqlitePool};
 use std::path::Path;
@@ -18,6 +19,18 @@ pub async fn init_db(db_path: &Path) -> Result<SqlitePool, sqlx::Error> {
             username TEXT NOT NULL,
             identity_pubkey TEXT NOT NULL,
             created_at INTEGER NOT NULL
+    );
+    ",
+    )
+    .execute(&pool)
+    .await?;
+
+    sqlx::query(
+        "
+        CREATE TABLE IF NOT EXISTS local_identity (
+            slot INTEGER PRIMARY KEY CHECK (slot = 1),
+                user_id TEXT NOT NULL,
+                device_id TEXT NOT NULL
     );
     ",
     )
@@ -61,6 +74,52 @@ pub async fn init_db(db_path: &Path) -> Result<SqlitePool, sqlx::Error> {
     .await?;
 
     Ok(pool)
+}
+
+pub async fn insert_local_identity(
+    pool: &SqlitePool,
+    identity: &LocalIdentity,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "
+        INSERT INTO local_identity (
+            slot,
+            user_id,
+            device_id
+    )
+    VALUES (1, ?, ?)
+    ",
+    )
+    .bind(identity.user_id().to_string())
+    .bind(identity.device_id().to_string())
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn get_local_identity(pool: &SqlitePool) -> Result<Option<LocalIdentity>, sqlx::Error> {
+    let row = sqlx::query(
+        "
+        SELECT user_id, device_id
+        FROM local_identity
+        WHERE slot = 1
+        ",
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    let Some(row) = row else {
+        return Ok(None);
+    };
+
+    let user_id = Ulid::from_string(row.try_get("user_id")?)
+        .map_err(|_| sqlx::Error::Protocol("Invalid local user ID".into()))?;
+
+    let device_id = Ulid::from_string(row.try_get("device_id")?)
+        .map_err(|_| sqlx::Error::Protocol("Invalid local device ID".into()))?;
+
+    Ok(Some(LocalIdentity::from_ids(user_id, device_id)))
 }
 
 pub async fn insert_conversation(

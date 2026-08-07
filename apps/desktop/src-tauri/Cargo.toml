@@ -4,14 +4,12 @@ version = "0.1.0"
 edition = "2021"
 license.workspace = true
 
-
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
-
 [dependencies]
-
 calemity-api = { workspace = true }
+calemity-identity = { workspace = true }
 calemity-protocol = { workspace = true }
 calemity-storage = { workspace = true }
 

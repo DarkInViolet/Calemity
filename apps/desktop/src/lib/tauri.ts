@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import type { Conversation } from "./conversation";
-import type { Message } from "./message";
+import type { MessageView } from "./message";
 
 export function createConversation(
     title: string,
@@ -18,16 +18,12 @@ export function listConversations(): Promise<Conversation[]> {
 }
 
 export function sendMessage(
-    authorId: string,
     conversationId: string,
-    deviceId: string,
     content: string,
-): Promise<void> {
-    return invoke<void>("send_message", {
+): Promise<MessageView> {
+    return invoke<MessageView>("send_message", {
         request: {
-            authorId,
             conversationId,
-            deviceId,
             content,
         },
     });
@@ -35,8 +31,8 @@ export function sendMessage(
 
 export function loadMessages(
     conversationId: string,
-): Promise<Message[]> {
-    return invoke<Message[]>("load_messages", {
+): Promise<MessageView[]> {
+    return invoke<MessageView[]>("load_messages", {
         request: {
             conversationId,
         },

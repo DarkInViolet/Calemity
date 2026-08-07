@@ -4,7 +4,7 @@ import { ConversationSidebar } from "./components/chat/ConversationSidebar";
 import { MessageComposer } from "./components/chat/MessageComposer";
 import { MessageList } from "./components/chat/MessageList";
 import type { Conversation } from "./lib/conversation";
-import type { Message } from "./lib/message";
+import type { MessageView } from "./lib/message";
 import { getErrorMessage } from "./lib/api-error";
 import {
     createConversation,
@@ -13,9 +13,6 @@ import {
     sendMessage,
 } from "./lib/tauri";
 
-const AUTHOR = "01K1GK79HVM0R8Y8B5XJXQ6A1A";
-const DEVICE_ID = "desktop";
-
 export default function App() {
     const [conversations, setConversations] =
         useState<Conversation[]>([]);
@@ -23,7 +20,7 @@ export default function App() {
     const [selectedConversationId, setSelectedConversationId] =
         useState<string | null>(null);
 
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<MessageView[]>([]);
     const [messageText, setMessageText] = useState("");
     const [conversationTitle, setConversationTitle] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -85,29 +82,31 @@ export default function App() {
             setError(getErrorMessage(caughtError));
         }
     }
-    async function handleSendMessage() {
-        if (
+async function handleSendMessage() {
+    if (
         !messageText.trim() ||
         !selectedConversationId
-        ) {
+    ) {
         return;
-        }
+    }
 
-        try {
-        await sendMessage(
-            AUTHOR,
+    try {
+        const sentMessage = await sendMessage(
             selectedConversationId,
-            DEVICE_ID,
             messageText,
         );
 
-            setMessageText("");
-            await refreshMessages(selectedConversationId);
-            setError(null);
-        } catch (caughtError) {
-            setError(getErrorMessage(caughtError));
-        }
+        setMessages((currentMessages) => [
+            ...currentMessages,
+            sentMessage,
+        ]);
+
+        setMessageText("");
+        setError(null);
+    } catch (caughtError) {
+        setError(getErrorMessage(caughtError));
     }
+}
 
     useEffect(() => {
         void refreshConversations();
@@ -156,7 +155,6 @@ export default function App() {
                 <MessageList
                     conversation={selectedConversation}
                     messages={messages}
-                    currentAuthorId={AUTHOR}
                 />
 
                 <MessageComposer

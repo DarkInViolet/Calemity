@@ -341,6 +341,7 @@ name = "calemity-desktop"
 version = "0.1.0"
 dependencies = [
  "calemity-api",
+ "calemity-identity",
  "calemity-protocol",
  "calemity-storage",
  "dirs 5.0.1",
@@ -355,6 +356,9 @@ dependencies = [
 [[package]]
 name = "calemity-identity"
 version = "0.1.0"
+dependencies = [
+ "ulid",
+]
 
 [[package]]
 name = "calemity-protocol"
@@ -377,6 +381,7 @@ dependencies = [
 name = "calemity-storage"
 version = "0.1.0"
 dependencies = [
+ "calemity-identity",
  "calemity-protocol",
  "sqlx",
  "ulid",
