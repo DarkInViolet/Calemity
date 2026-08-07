@@ -20,8 +20,8 @@ export function listConversations(): Promise<Conversation[]> {
 export function sendMessage(
     conversationId: string,
     content: string,
-): Promise<void> {
-    return invoke<void>("send_message", {
+): Promise<MessageView> {
+    return invoke<MessageView>("send_message", {
         request: {
             conversationId,
             content,

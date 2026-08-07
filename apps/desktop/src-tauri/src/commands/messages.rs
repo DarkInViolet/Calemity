@@ -7,13 +7,23 @@ use calemity_identity::LocalIdentity;
 use calemity_protocol::models::message::Message;
 use calemity_storage::{get_messages, insert_message};
 use tauri::State;
+use ulid::Ulid;
+
+fn message_to_view(message: Message, current_user_id: Ulid) -> MessageView {
+    MessageView {
+        id: message.id,
+        content: message.content,
+        timestamp: message.timestamp,
+        is_own: message.author_id == current_user_id,
+    }
+}
 
 #[tauri::command]
 pub async fn send_message(
     database: State<'_, Database>,
     identity: State<'_, LocalIdentity>,
     request: SendMessageRequest,
-) -> Result<(), ApiError> {
+) -> Result<MessageView, ApiError> {
     if request.content.trim().is_empty() {
         return Err(ApiError::new(
             ApiErrorCode::MessageContentEmpty,
@@ -36,7 +46,7 @@ pub async fn send_message(
             ApiError::new(ApiErrorCode::StorageFailure, "Failed to send the message")
         })?;
 
-    Ok(())
+    Ok(message_to_view(message, identity.user_id()))
 }
 
 #[tauri::command]
@@ -55,11 +65,6 @@ pub async fn load_messages(
 
     Ok(messages
         .into_iter()
-        .map(|message| MessageView {
-            id: message.id,
-            content: message.content,
-            timestamp: message.timestamp,
-            is_own: message.author_id == identity.user_id(),
-        })
+        .map(|message| message_to_view(message, identity.user_id()))
         .collect())
 }

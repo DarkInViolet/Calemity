@@ -82,28 +82,31 @@ export default function App() {
             setError(getErrorMessage(caughtError));
         }
     }
-    async function handleSendMessage() {
-        if (
+async function handleSendMessage() {
+    if (
         !messageText.trim() ||
         !selectedConversationId
-        ) {
+    ) {
         return;
-        }
-
-        try {
-
-    await sendMessage(
-        selectedConversationId,
-        messageText,
-    );
-
-            setMessageText("");
-            await refreshMessages(selectedConversationId);
-            setError(null);
-        } catch (caughtError) {
-            setError(getErrorMessage(caughtError));
-        }
     }
+
+    try {
+        const sentMessage = await sendMessage(
+            selectedConversationId,
+            messageText,
+        );
+
+        setMessages((currentMessages) => [
+            ...currentMessages,
+            sentMessage,
+        ]);
+
+        setMessageText("");
+        setError(null);
+    } catch (caughtError) {
+        setError(getErrorMessage(caughtError));
+    }
+}
 
     useEffect(() => {
         void refreshConversations();
