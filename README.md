@@ -21,6 +21,30 @@ Users will be able to connect Calemity to infrastructure they control, including
 - No mandatory subscription tiers or artificial feature paywalls.
 - Deep client customization, with themes and plugins planned later.
 
+## Hosting
+Self-hosting is intended to be a first-class part of Calemity rather than an unsupported alternative to an official service.
+In the future, communities should be able to run Calemity using infrastructure such as:
+- A local computer or home server.
+- A NAS.
+- A VPS or dedicated server.
+- A compatible third-party hosting provider.
+- An optional officially managed Calemity hosting service.
+Official Calemity hosting may be offered commercially in the future for users who prefer managed infrastructure, storage, backups, monitoring, upgrades and support.
+
+Such services do not change the goal of keeping the core Calemity server open and independently self-hostable.
+
+### Infrastructure without lock-in
+Calemity should not depend on one networking or cloud provider.
+The architecture is being explored around interoperable pieces such as:
+
+Encrypted chat        → MLS
+Native connectivity   → QUIC / NAT traversal / encrypted relays
+Large files           → encrypted content-addressed storage
+Voice / video         → WebRTC
+Group media           → TURN / SFU
+Media E2EE            → SFrame-style application encryption
+Storage               → local / NAS / WebDAV / S3-compatible / managed
+
 ## Current status
 Calemity is in very early development.
 Currently implemented:
@@ -59,17 +83,7 @@ Calemity/
 ├── docs/
 └── migrations/
 ```
-## Hosting
-Self-hosting is intended to be a first-class part of Calemity rather than an unsupported alternative to an official service.
-In the future, communities should be able to run Calemity using infrastructure such as:
-- A local computer or home server.
-- A NAS.
-- A VPS or dedicated server.
-- A compatible third-party hosting provider.
-- An optional officially managed Calemity hosting service.
-Official Calemity hosting may be offered commercially in the future for users who prefer managed infrastructure, storage, backups, monitoring, upgrades and support.
 
-Such services do not change the goal of keeping the core Calemity server open and independently self-hostable.
 
 ## Philosophy
 Calemity is built **with the community, for the community**.
