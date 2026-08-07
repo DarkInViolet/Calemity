@@ -7,11 +7,6 @@ pub async fn setup_local_identity(pool: &SqlitePool) -> LocalIdentity {
         .await
         .expect("Could not load local identity")
     {
-        eprintln!(
-            "Loaded local identity: user={}, device={}",
-            identity.user_id, identity.device_id
-        );
-
         return identity;
     }
 
@@ -20,11 +15,6 @@ pub async fn setup_local_identity(pool: &SqlitePool) -> LocalIdentity {
     insert_local_identity(pool, &identity)
         .await
         .expect("Could not store local identity");
-
-    eprintln!(
-        "Created local identity: user={}, device={}",
-        identity.user_id, identity.device_id
-    );
 
     identity
 }

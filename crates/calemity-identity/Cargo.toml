@@ -5,5 +5,4 @@ edition = "2021"
 license.workspace = true
 
 [dependencies]
-serde = { workspace = true }
 ulid = { workspace = true }

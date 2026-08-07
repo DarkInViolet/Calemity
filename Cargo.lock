@@ -357,7 +357,6 @@ dependencies = [
 name = "calemity-identity"
 version = "0.1.0"
 dependencies = [
- "serde",
  "ulid",
 ]
 

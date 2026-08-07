@@ -90,8 +90,8 @@ pub async fn insert_local_identity(
     VALUES (1, ?, ?)
     ",
     )
-    .bind(identity.user_id.to_string())
-    .bind(identity.device_id.to_string())
+    .bind(identity.user_id().to_string())
+    .bind(identity.device_id().to_string())
     .execute(pool)
     .await?;
 

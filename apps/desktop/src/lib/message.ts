@@ -1,8 +1,6 @@
-export interface Message {
+export interface MessageView {
     id: string;
-    author_id: string;
-    conversation_id: string;
-    device_id: string;
     content: string;
     timestamp: number;
+    isOwn: boolean;
 }

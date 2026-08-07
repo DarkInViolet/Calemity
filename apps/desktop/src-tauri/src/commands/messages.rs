@@ -1,15 +1,17 @@
 use crate::core::database::Database;
 use calemity_api::{
     error::{ApiError, ApiErrorCode},
-    messages::{LoadMessagesRequest, SendMessageRequest},
+    messages::{LoadMessagesRequest, MessageView, SendMessageRequest},
 };
+use calemity_identity::LocalIdentity;
 use calemity_protocol::models::message::Message;
 use calemity_storage::{get_messages, insert_message};
 use tauri::State;
 
 #[tauri::command]
 pub async fn send_message(
-    state: State<'_, Database>,
+    database: State<'_, Database>,
+    identity: State<'_, LocalIdentity>,
     request: SendMessageRequest,
 ) -> Result<(), ApiError> {
     if request.content.trim().is_empty() {
@@ -20,13 +22,13 @@ pub async fn send_message(
     }
 
     let message = Message::new(
-        request.author_id,
+        identity.user_id(),
         request.conversation_id,
-        request.device_id,
+        identity.device_id().to_string(),
         request.content,
     );
 
-    insert_message(&state.pool, &message)
+    insert_message(&database.pool, &message)
         .await
         .map_err(|error| {
             eprintln!("Failed to store message: {error}");
@@ -39,14 +41,25 @@ pub async fn send_message(
 
 #[tauri::command]
 pub async fn load_messages(
-    state: State<'_, Database>,
+    database: State<'_, Database>,
+    identity: State<'_, LocalIdentity>,
     request: LoadMessagesRequest,
-) -> Result<Vec<Message>, ApiError> {
-    get_messages(&state.pool, &request.conversation_id)
+) -> Result<Vec<MessageView>, ApiError> {
+    let messages = get_messages(&database.pool, &request.conversation_id)
         .await
         .map_err(|error| {
             eprintln!("Failed to load messages: {error}");
 
             ApiError::new(ApiErrorCode::StorageFailure, "Failed to load messages")
+        })?;
+
+    Ok(messages
+        .into_iter()
+        .map(|message| MessageView {
+            id: message.id,
+            content: message.content,
+            timestamp: message.timestamp,
+            is_own: message.author_id == identity.user_id(),
         })
+        .collect())
 }

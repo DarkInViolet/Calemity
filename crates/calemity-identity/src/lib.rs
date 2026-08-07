@@ -1,16 +1,14 @@
-use serde::{Deserialize, Serialize};
 use ulid::Ulid;
-
-/// Identifies the local Calemity user and the device currently running
-/// the application.
+/// Stable identifiers for the local Calemity user and the device
+/// currently running the application.
 ///
-/// This is deliberately separate from cryptographic identity for now.
-/// Account keys and device keys can later be attached to these stable IDs
-/// without changing the identity of the user or device.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// This type contains no cryptographic key material and is intentionally
+/// not serializable. Secret key material should live in dedicated
+/// secret-bearing types and storage.
+#[derive(Clone, PartialEq, Eq)]
 pub struct LocalIdentity {
-    pub user_id: Ulid,
-    pub device_id: Ulid,
+    user_id: Ulid,
+    device_id: Ulid,
 }
 
 impl LocalIdentity {
@@ -25,6 +23,14 @@ impl LocalIdentity {
     /// Reconstructs an existing local identity from persisted IDs.
     pub fn from_ids(user_id: Ulid, device_id: Ulid) -> Self {
         Self { user_id, device_id }
+    }
+
+    pub fn user_id(&self) -> Ulid {
+        self.user_id
+    }
+
+    pub fn device_id(&self) -> Ulid {
+        self.device_id
     }
 }
 

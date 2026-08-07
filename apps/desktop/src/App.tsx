@@ -4,7 +4,7 @@ import { ConversationSidebar } from "./components/chat/ConversationSidebar";
 import { MessageComposer } from "./components/chat/MessageComposer";
 import { MessageList } from "./components/chat/MessageList";
 import type { Conversation } from "./lib/conversation";
-import type { Message } from "./lib/message";
+import type { MessageView } from "./lib/message";
 import { getErrorMessage } from "./lib/api-error";
 import {
     createConversation,
@@ -13,9 +13,6 @@ import {
     sendMessage,
 } from "./lib/tauri";
 
-const AUTHOR = "01K1GK79HVM0R8Y8B5XJXQ6A1A";
-const DEVICE_ID = "desktop";
-
 export default function App() {
     const [conversations, setConversations] =
         useState<Conversation[]>([]);
@@ -23,7 +20,7 @@ export default function App() {
     const [selectedConversationId, setSelectedConversationId] =
         useState<string | null>(null);
 
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<MessageView[]>([]);
     const [messageText, setMessageText] = useState("");
     const [conversationTitle, setConversationTitle] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -94,12 +91,11 @@ export default function App() {
         }
 
         try {
-        await sendMessage(
-            AUTHOR,
-            selectedConversationId,
-            DEVICE_ID,
-            messageText,
-        );
+
+    await sendMessage(
+        selectedConversationId,
+        messageText,
+    );
 
             setMessageText("");
             await refreshMessages(selectedConversationId);
@@ -156,7 +152,6 @@ export default function App() {
                 <MessageList
                     conversation={selectedConversation}
                     messages={messages}
-                    currentAuthorId={AUTHOR}
                 />
 
                 <MessageComposer
