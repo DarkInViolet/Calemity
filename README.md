@@ -13,7 +13,8 @@ Users will be able to connect Calemity to infrastructure they control, including
 - Direct messages, group chats, communities and channels.
 - End-to-end encryption where appropriate.
 - Multi-device message synchronization.
-- Self-hosting on a NAS, home server or VPS.
+- Self-hosting on a PC, NAS, home server or VPS.
+- Optional community-operated and managed hosting.
 - Portable backups, exports and server migration.
 - Voice, video and screen sharing later.
 - Open protocols and community-built tools.
@@ -30,7 +31,6 @@ Currently implemented:
 - Local SQLite storage.
 - Shared protocol models.
 - Basic local message saving and loading.
-
 Nothing should currently be considered production-ready, security-audited, or safe to entrust with the nuclear launch codes.
 
 ## Technology
@@ -50,6 +50,7 @@ Calemity/
 ├── apps/
 │   └── desktop/
 ├── crates/
+│   ├── calemity-api/
 │   ├── calemity-protocol/
 │   ├── calemity-storage/
 │   ├── calemity-identity/
@@ -58,6 +59,16 @@ Calemity/
 ├── docs/
 └── migrations/
 ```
+## Hosting
+Self-hosting is intended to be a first-class part of Calemity rather than an unsupported alternative to an official service.
+In the future, communities should be able to run Calemity using infrastructure such as:
+- A local computer or home server.
+- A NAS.
+- A VPS or dedicated server.
+- A compatible third-party hosting provider.
+- An optional officially managed Calemity hosting service.
+Official Calemity hosting may be offered commercially in the future for users who prefer managed infrastructure, storage, backups, monitoring, upgrades and support.
+Such services do not change the goal of keeping the core Calemity server open and independently self-hostable.
 
 ## Philosophy
 Calemity is built **with the community, for the community**.
@@ -68,8 +79,12 @@ The goal is to prevent the shared platform from slowly becoming somebody else's 
 ## Why AGPL?
 Calemity is intended to be a community driven communication platform. I welcome commercial use, hosting, and contributions. :3
 The AGPL is used because I believe improvements to the platform should remain available to everyone, whether Calemity is distributed as software or offered as a hosted service.
-
 With that said...I'm still shocked I managed to get a window to even pop up! If you've read this--have a lovely morning, noon, afternoon/evening!^^
+
+## Contributing
+Contributions are welcome!
+Calemity uses the Developer Certificate of Origin (DCO) for contributions rather than requiring contributors to assign their copyright to the project.
+See CONTRIBUTING.md for development, contribution and sign-off instructions.
 
 ## License
 Calemity is licensed under the **GNU Affero General Public License v3.0 or later**.
