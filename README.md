@@ -68,22 +68,30 @@ In the future, communities should be able to run Calemity using infrastructure s
 - A compatible third-party hosting provider.
 - An optional officially managed Calemity hosting service.
 Official Calemity hosting may be offered commercially in the future for users who prefer managed infrastructure, storage, backups, monitoring, upgrades and support.
+
 Such services do not change the goal of keeping the core Calemity server open and independently self-hostable.
 
 ## Philosophy
 Calemity is built **with the community, for the community**.
+
 Commercial hosting, consulting and support are welcome. Improvements to the app should remain available to everyone, including improvements used by hosted services.
+
 The goal is not to prevent people from building businesses around Calemity.
+
 The goal is to prevent the shared platform from slowly becoming somebody else's closed garden with a premium badge attached.
 
 ## Why AGPL?
 Calemity is intended to be a community driven communication platform. I welcome commercial use, hosting, and contributions. :3
+
 The AGPL is used because I believe improvements to the platform should remain available to everyone, whether Calemity is distributed as software or offered as a hosted service.
+
 With that said...I'm still shocked I managed to get a window to even pop up! If you've read this--have a lovely morning, noon, afternoon/evening!^^
 
 ## Contributing
 Contributions are welcome!
+
 Calemity uses the Developer Certificate of Origin (DCO) for contributions rather than requiring contributors to assign their copyright to the project.
+
 See CONTRIBUTING.md for development, contribution and sign-off instructions.
 
 ## License
