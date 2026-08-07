@@ -37,13 +37,13 @@ Such services do not change the goal of keeping the core Calemity server open an
 Calemity should not depend on one networking or cloud provider.
 The architecture is being explored around interoperable pieces such as:
 
-Encrypted chat        → MLS
-Native connectivity   → QUIC / NAT traversal / encrypted relays
-Large files           → encrypted content-addressed storage
-Voice / video         → WebRTC
-Group media           → TURN / SFU
-Media E2EE            → SFrame-style application encryption
-Storage               → local / NAS / WebDAV / S3-compatible / managed
+- Encrypted chat        → MLS
+- Native connectivity   → QUIC / NAT traversal / encrypted relays
+- Large files           → encrypted content-addressed storage
+- Voice / video         → WebRTC
+- Group media           → TURN / SFU
+- Media E2EE            → SFrame-style application encryption
+- Storage               → local / NAS / WebDAV / S3-compatible / managed
 
 ## Current status
 Calemity is in very early development.
