@@ -3,9 +3,15 @@ use iroh::{
     endpoint::{presets, IncomingAddr},
     Endpoint, EndpointAddr, EndpointId, TransportAddr,
 };
-use std::str::FromStr;
+use std::{
+    str::FromStr,
+    time::{Duration, Instant},
+};
 
 const ALPN: &[u8] = b"calemity/private-transport-spike/1";
+
+const WARMUP_SAMPLES: usize = 10;
+const BENCHMARK_SAMPLES: usize = 100;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -93,10 +99,11 @@ async fn run_host() -> Result<()> {
 
     let connection = incoming.await.context("Connection handshake failed")?;
 
+    // Initial message exchange.
     let (mut send, mut receive) = connection
         .accept_bi()
         .await
-        .context("Could not accept stream")?;
+        .context("Could not accept initial stream")?;
 
     let data = receive
         .read_to_end(64 * 1024)
@@ -114,6 +121,38 @@ async fn run_host() -> Result<()> {
         .context("Could not send response")?;
 
     send.finish().context("Could not finish response")?;
+
+    // Benchmark responder.
+    let total_samples = WARMUP_SAMPLES + BENCHMARK_SAMPLES;
+
+    println!();
+    println!("Waiting for latency benchmark...");
+
+    for _ in 0..total_samples {
+        let (mut send, mut receive) = connection
+            .accept_bi()
+            .await
+            .context("Could not accept benchmark stream")?;
+
+        let data = receive
+            .read_to_end(16)
+            .await
+            .context("Could not read benchmark ping")?;
+
+        if data != b"ping" {
+            anyhow::bail!("Benchmark protocol error: expected ping");
+        }
+
+        send.write_all(b"pong")
+            .await
+            .context("Could not send benchmark pong")?;
+
+        send.finish()
+            .context("Could not finish benchmark response")?;
+    }
+
+    println!();
+    println!("Benchmark complete.");
 
     connection.closed().await;
     endpoint.close().await;
@@ -182,10 +221,11 @@ async fn run_client(endpoint_id: &str) -> Result<()> {
         }
     }
 
+    // Initial message exchange.
     let (mut send, mut receive) = connection
         .open_bi()
         .await
-        .context("Could not open stream")?;
+        .context("Could not open initial stream")?;
 
     send.write_all(b"Hello through Calemity's private transport!")
         .await
@@ -204,8 +244,69 @@ async fn run_client(endpoint_id: &str) -> Result<()> {
     println!("Received:");
     println!("{response}");
 
+    println!();
+    println!("Running relay-only latency benchmark...");
+    println!("Warm-up samples: {WARMUP_SAMPLES}");
+    println!("Measured samples: {BENCHMARK_SAMPLES}");
+
+    let mut samples = Vec::with_capacity(BENCHMARK_SAMPLES);
+
+    for sample_number in 0..(WARMUP_SAMPLES + BENCHMARK_SAMPLES) {
+        let start = Instant::now();
+
+        let (mut send, mut receive) = connection
+            .open_bi()
+            .await
+            .context("Could not open benchmark stream")?;
+
+        send.write_all(b"ping")
+            .await
+            .context("Could not send benchmark ping")?;
+
+        send.finish().context("Could not finish benchmark ping")?;
+
+        let data = receive
+            .read_to_end(16)
+            .await
+            .context("Could not read benchmark pong")?;
+
+        if data != b"pong" {
+            anyhow::bail!("Benchmark protocol error: expected pong");
+        }
+
+        let elapsed = start.elapsed();
+
+        if sample_number >= WARMUP_SAMPLES {
+            samples.push(elapsed);
+        }
+    }
+
+    samples.sort_unstable();
+
+    println!();
+    println!("Calemity private transport benchmark");
+    println!("------------------------------------");
+    println!("Samples:     {}", samples.len());
+    println!("Minimum RTT: {}", format_duration(samples[0]));
+    println!("Median RTT:  {}", format_duration(percentile(&samples, 50)));
+    println!("P90 RTT:     {}", format_duration(percentile(&samples, 90)));
+    println!("P99 RTT:     {}", format_duration(percentile(&samples, 99)));
+    println!(
+        "Maximum RTT: {}",
+        format_duration(samples[samples.len() - 1])
+    );
+
     connection.close(0u32.into(), b"done");
     endpoint.close().await;
 
     Ok(())
+}
+
+fn percentile(samples: &[Duration], percentile: usize) -> Duration {
+    let index = ((samples.len() - 1) * percentile) / 100;
+    samples[index]
+}
+
+fn format_duration(duration: Duration) -> String {
+    format!("{:.2} ms", duration.as_secs_f64() * 1000.0)
 }
