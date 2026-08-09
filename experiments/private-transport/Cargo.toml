@@ -1,0 +1,12 @@
+[package]
+name = "calemity-private-transport-spike"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow = "1"
+iroh = "1.0.3"
+tokio = { version = "1", features = ["full"] }
+
+[workspace]
