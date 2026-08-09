@@ -1,5 +1,8 @@
 use anyhow::{Context, Result};
-use iroh::{endpoint::presets, Endpoint, EndpointAddr, EndpointId};
+use iroh::{
+    endpoint::{presets, IncomingAddr},
+    Endpoint, EndpointAddr, EndpointId, TransportAddr,
+};
 use std::str::FromStr;
 
 const ALPN: &[u8] = b"calemity/private-transport-spike/1";
@@ -68,6 +71,26 @@ async fn run_host() -> Result<()> {
         .await
         .context("Endpoint closed before connection arrived")?;
 
+    match incoming.remote_addr() {
+        IncomingAddr::Relay { url, .. } => {
+            println!();
+            println!("Transport check: RELAY ✓");
+            println!("Relay: {url}");
+        }
+
+        IncomingAddr::Ip(addr) => {
+            anyhow::bail!("PRIVACY FAILURE: direct IP transport detected: {addr}");
+        }
+
+        IncomingAddr::Custom(_) => {
+            anyhow::bail!("PRIVACY FAILURE: unexpected custom transport");
+        }
+
+        _ => {
+            anyhow::bail!("PRIVACY FAILURE: unknown transport type");
+        }
+    }
+
     let connection = incoming.await.context("Connection handshake failed")?;
 
     let (mut send, mut receive) = connection
@@ -116,6 +139,48 @@ async fn run_client(endpoint_id: &str) -> Result<()> {
         .connect(address, ALPN)
         .await
         .context("Could not connect")?;
+
+    if let Some(remote_info) = endpoint.remote_info(endpoint_id).await {
+        let mut relay_addresses = 0;
+        let mut ip_addresses = 0;
+        let mut custom_addresses = 0;
+        let mut unknown_addresses = 0;
+
+        for address in remote_info.addrs() {
+            match address.addr() {
+                TransportAddr::Relay(_) => {
+                    relay_addresses += 1;
+                }
+
+                TransportAddr::Ip(_) => {
+                    ip_addresses += 1;
+                }
+
+                TransportAddr::Custom(_) => {
+                    custom_addresses += 1;
+                }
+
+                _ => {
+                    unknown_addresses += 1;
+                }
+            }
+        }
+
+        println!();
+        println!("Remote metadata check:");
+        println!("  relay addresses: {relay_addresses}");
+        println!("  IP addresses: {ip_addresses}");
+        println!("  custom addresses: {custom_addresses}");
+        println!("  unknown addresses: {unknown_addresses}");
+
+        if ip_addresses > 0 {
+            anyhow::bail!("PRIVACY FAILURE: peer IP address was learned");
+        }
+
+        if custom_addresses > 0 || unknown_addresses > 0 {
+            anyhow::bail!("PRIVACY FAILURE: unexpected remote transport metadata");
+        }
+    }
 
     let (mut send, mut receive) = connection
         .open_bi()
