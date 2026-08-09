@@ -7,6 +7,14 @@ Users will be able to connect Calemity to infrastructure they control, including
 
 > Currently capable of displaying `hey` in a desktop window. Revolutionary stuff.
 
+> [!IMPORTANT]
+> **Calemity is experimental, and there are some hard problems I haven't figured out yet.**
+>
+> I'm actively looking for ideas around privacy-preserving networking, one-click hosting,
+> media scalability, security, and storage. Everything is VERY welcome! Thank you for the consideration!
+>
+> **[Read the open questions →](./OPEN_QUESTIONS.md)** ^^
+
 ## Long-term goals
 - Local-first messaging and offline access.
 - Secure identities and multiple authorized devices.
